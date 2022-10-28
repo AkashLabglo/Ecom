@@ -150,7 +150,6 @@ def Orderedby(request, id):
         total = (tax + opj.price) * opj.quantity
         # order_tb_save:-
         addorders_values = Orderby.objects.create(
-            
             prodect_name = opj,  
             tax = tax, 
             current_price = opj.price,
