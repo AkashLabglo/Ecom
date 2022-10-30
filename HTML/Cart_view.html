@@ -3,7 +3,18 @@
         {% load static %}
         <link rel = "stylesheet" href="{% static 'css/login.css' %}">
     </head>
+    {% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <h3 class = "message"><li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li></h3>
+    {% endfor %}
+    {% endif %}
 {% if opj %} 
+<form method = "POST" action = "Orderedby">
+    {% csrf_token %}
+    
+    <button type="submit">chekout</button>
+  </form>
 <center>
 <div class = "container">
        
@@ -32,14 +43,7 @@
           </form>   
     </td>
     <td><a href="remove/{{i.id}}" class="button">remove</a></td>
-    <td>
-        <form method = "POST" action = "Orderedby/{{i.id}}">
-            {% csrf_token %}
-            
-            <button type="submit">chekout</button>
-          </form> 
         
-    </td>    
 
 </tr>
     

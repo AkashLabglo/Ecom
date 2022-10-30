@@ -33,15 +33,21 @@ urlpatterns = [
     path('cart/<pk>', add_cart, name = "add_cart"), 
     path('Show_cart', Show_cart, name = 'Show_cart'), 
     path('remove/<id>', Cart_remove, name = "Car_remove"),
-    path('Orderedby/<id>', Orderedby, name = "Orderedby"), #----saparate_cart prodct get url-----
-    #path('Orderedby', Orderedby, name = "Orderedby"), 
+    #path('Orderedby/<id>', Orderedby, name = "Orderedby"), #----saparate_cart prodct get url-----
+    path('Orderedby', Orderedby, name = "Orderedby"),  
     path('addquantity/<id>', addquantity, name = "addquantity"),  
     # Login/register/logout/password's_Path
     path("login", login, name = "login"),
     path('Logout', Logout, name = 'Logout'), 
     path('register', Register, name = 'register'), 
+    # Wish rlated urls:-
+    path('wish/<pk>', add_wish, name = "add_wish"),
+    path('Show_wish', Show_wish, name = 'Show_wish'), 
+    path('wishremove/<id>', wish_remove, name = "wish_remove"),
+
     
 ]
+# image url to share
 if settings.DEBUG:
         urlpatterns += static(settings.MEDIA_URL,
         document_root=settings.MEDIA_ROOT)

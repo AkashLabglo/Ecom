@@ -1,4 +1,6 @@
 from contextlib import redirect_stderr
+from ssl import create_default_context
+from unicodedata import name
 from django.shortcuts import render, redirect
 from wep_app.models import *
 from django.http import *
@@ -13,9 +15,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User 
 # only_allowed_login person:-
 from django.contrib.auth.decorators import login_required
-# calulate_to use random module:-
-import random
-from decimal import Decimal
+from datetime import datetime
 
 #------------------------------------------------------
 
@@ -40,8 +40,10 @@ def add_cart(request, pk):
     if request:
         
         opj = Prodect.objects.get(id = pk)
+        opj.added = "added_cart"
+        opj.save()
 
-        addCart_value = Cart.objects.create(
+        addCart_value, success_created = Cart.objects.get_or_create(
             name = opj,
             price = opj.price,
             image = opj.image, 
@@ -50,6 +52,10 @@ def add_cart(request, pk):
                
         )
         print(opj)
+        if success_created:
+            messages.info(request,'The item was added to your Cart')
+        else:
+            messages.info(request,'The item was already in your Cart')   
         return redirect("interface")
     else:
         return HttpResponse("<h1>Prodects Not Added to Cart</h1>")
@@ -67,8 +73,14 @@ def Show_cart(request):
 # cart_items_remove:-
 @login_required
 def Cart_remove(request, id):
-    opj = Cart.objects.get(id = id)
-    opj.delete()
+    if request:
+        opj = Cart.objects.get(id = id)
+
+        opj1 = Prodect.objects.get(id = opj.name.id)
+        opj1.added = "not_added"
+        opj1.save()
+
+        opj.delete()
     return redirect("Show_cart")    
 
 # cart quantity_add:-
@@ -133,29 +145,30 @@ def Register(request):
 
 #------------------------------------------------------
 
-# check_out (to) order by:
-@login_required
+# check_out as order by:
+'''@login_required
 def Orderedby(request, id):
     my_list = [3, 5, 6, 8, 10]
     if request.method == 'POST':   
         opj = Cart.objects.get(id = id)
 
         # <--- tax_calculate Codes --->
-        '''random_tax = Decimal(random.choice(my_list))
+        random_tax = Decimal(random.choice(my_list))
         tax_ammount = random_tax/Decimal(100) * opj.price
         tax = tax_ammount/opj.price * Decimal(100) 
-        total = (tax + opj.price) * opj.quantity'''
+        total = (tax + opj.price) * opj.quantity
         ##########################################
         tax = Decimal(18)/opj.price * Decimal(100)
         total = (tax + opj.price) * opj.quantity
         # order_tb_save:-
-        addorders_values = Orderby.objects.create(
+        addorders_values = Orderby.objects.get_or_create(
             prodect_name = opj,  
             tax = tax, 
             current_price = opj.price,
-            total = total
+            total = total, 
+            customer = opj.customer
             
-        )
+        )[0]
         if opj is not None and request.method == 'POST':
             opj.order = True
             opj.save()
@@ -164,64 +177,135 @@ def Orderedby(request, id):
         else:
              pass        
     else:
-        return HttpResponse("<h1>you not checkout prodect's</h1>")   
+        return HttpResponse("<h1>you not checkout prodect's</h1>")'''
 
 
-
-'''def Orderedby(request):
-    if request.method == 'POST': 
+@login_required
+def Orderedby(request):
+    ak = Prodect.objects.all()
+    ak.update(added = 'not_added')
+    if request.method == 'POST' : 
         opj = Cart.objects.filter(
-            customer = request.user,
+            customer = request.user, 
+           
         )
         
+        taxes = 0
+        for i in opj.all():
+            tax = int(i.price/ 18 )
+            taxes += tax
+        total = opj.aggregate(Sum('price'))
 
-
-        addorders_values = Orderby.objects.create(
+        opj2= Orderby.objects.create(
+            customer = request.user, 
+             
             
-            prodect_name = opj, 
-            tax = tax, 
-            current_price = opj.price,
-            total = total, 
-            customer = request.user
-            
+        )      
+        opj2.ordered_things.add(
+            *Cart.objects.filter(Q(customer = request.user) & Q(order = False))
+            #*opj 
         )
         opj.update(order = True)
-        opj1 = Orderby.objects.filter(
-            customer = request.user
+        opj1 = opj2.ordered_things.all()
+        print(opj1)
+        contaxt = {
+            'opj1':opj1, 
+            'tax':tax,
+            'total': total['price__sum'] + taxes
+            
+        }
+        opj.update(order = True)
+        
+        return render(request, "order.html" , contaxt)
+
+    # order_view:-    
+    if request:
+        opj2= Orderby.objects.latest(
+            'ordered_things__id' 
         )
-        return render(request, "order.html" , {'opj1':opj1})'''
+        
+        opj1 = opj2.ordered_things.all()
+        total = opj2.ordered_things.aggregate(Sum('price')) 
+        quantity = opj2.ordered_things.aggregate(Sum('quantity'))
+        print(total)
+        print(quantity)
+        #total = Orderby.objects.filter(customer = request.user).aggregate(Sum('ordered_things__price'))
+        print(total)
+        #tax = total['ordered_things__price__sum']/18
+        tax = total['price__sum']/18
+        print(int(tax))
+        contaxt = {
+            'opj1':opj1, 
+            #'total':total['ordered_things__price__sum'] + int(tax),
+            'total':total['price__sum'] * quantity['quantity__sum'] + int(tax),
+            'tax':int(tax) 
+            
+        }
+        return render(request, "orderview_page.html" , contaxt)
+        
+
 #------------------------------------------------------
 
-'''
-const[state,setState]=useState(fathers name:"")
-<input name="fathers name" value="{state.father name} onchange={(e)=>setState(e.target.value)}"/>
-''' 
-         
+# add_to_wish;-
 
+def add_wish(request, pk):
+    if request:
+        
+        opj = Prodect.objects.get(id = pk)
+        opj.added = "added_wish"
+        opj.save()
 
-
-
+        addCart_value, success_created = Wishlist.objects.get_or_create(
+            name = opj,
+            price = opj.price,
+            image = opj.image, 
+            order = False, 
+            customer = request.user 
                
-        
-        
-
-
-
-'''def search(request):
-    if request.method == 'POST':
-        search = request.POST.get('search')
-        if search is not None:
-            if search is Prodect.objects.filter(category__iexact = search):
-                opj = Prodect.objects.filter(category = search)
-                print(opj)
-                return render (request, "prodect_tb.html", {'opj':opj})
-            elif search is Prodect.objects.filter(brand = search):
-                opj = Prodect.objects.filter(name = search)
-                return render (request, "prodect_tb.html", {'opj':opj})
-            else:
-                return HttpResponse("<h1>Prodects Not Available</h1>")     
+        )
+        print(opj)
+        if success_created:
+            #messages.info(request,'The item was Already in your Cart')
+            messages.info(request,'The item was added to your WishList')
         else:
-            pass
+            messages.warning(request,'The item was Already to your WishList')    
+        return redirect("interface")
     else:
-        opj = Prodect.objects.all()
-        return render (request, "prodect_tb.html", {'opj':opj})'''
+        return HttpResponse("<h1>Prodects Not Added to Cart</h1>")         
+
+# wish_Show :-
+
+def Show_wish(request):
+    '''
+    >> remove your separate wish prodect's <<
+    '''
+    opj = Wishlist.objects.filter(
+        order = False, 
+        customer = request.user
+        )
+    return render (request, 'wish.html', {'opj': opj})
+
+# wish_remove:-
+def wish_remove(request, id):
+    '''
+    >> remove your separate wish prodect's <<
+    '''
+    opj = Wishlist.objects.get(id = id)
+
+    opj1 = Prodect.objects.get(id = opj.name.id)
+    opj1.added = "not_added"
+    opj1.save()
+    #messages.warning(request,'The item was Already to your WishList')    
+
+    opj.delete()
+    return redirect("Show_wish") 
+
+#------------------------------------------------------
+
+
+
+        
+        
+
+
+

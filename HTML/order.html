@@ -22,12 +22,12 @@
     {% for i in opj1 %}
     <tr>
         
-    <td><img src ="{{i.prodect_name.image.url}}" alt = "Not Uploaded" width =100px height = 100px></td>
-    <td>{{i.prodect_name.name.model}}</td>
-    <td>{{i.prodect_name.quantity}}</td>
-    <td>{{i.current_price}}</td>
-    <td>{{i.tax}}</td>
-    <td>{{i.total}}</td>   
+    <td><img src ="{{i.name.image.url}}" class="img-fluid img-thumbnail" alt = "Not Uploaded" width =100px height = 100px></td>
+    <td>{{i.name.model}}</td>
+    <td>{{i.quantity}}</td>
+    <td>{{i.price}}</td>
+    <td>{{tax}}</td>
+    <td>{{total}}</td>   
 
 </tr>
     
