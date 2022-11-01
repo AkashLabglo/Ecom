@@ -9,6 +9,7 @@
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
+  
 }
 
 .topnav {
@@ -115,13 +116,14 @@ h2{
 h3.message{
   background-color:powderblue;
 }
+
 </style>
 
 </head>
 <body>
 
 <div class="topnav">
-  <a class="active" href="#home">Home</a>
+  <a class="active" href=" ">Home</a>
   <a  href="Logout">Logout</a>
   <a class="active" href="login">Login</a>
   <a  href="Show_cart">Cart</a>
@@ -150,7 +152,7 @@ h3.message{
 <div class = "container">
        
 
-    <table border=1 width=500px height = 500px>
+    <!--<table border=2 width=500px height = 500px>
     <tr style = "color:green">
     <th><h2>Prodects<h2></th>
     
@@ -166,13 +168,13 @@ h3.message{
    <p><h3>model :{{i.model}}</h3></p>
    <p>Brand :{{i.brand}}</p>
    <p>bice  :{{i.price}}</p>
-   {% if i.added == 'added_wish' %}
+   {% if i.added == 1 %}
    <button class = "button"><a href = "/wish/{{i.id}}" method = "POST" >Add wish</a></button>
    {% endif %}
-   {% if i.added == 'added_cart' %}
+   {% if i.added == 2 %}
    <button class = "button"><a href = "/cart/{{i.id}}" method = "POST" >Add Cart</a></button>
    {% endif %}
-   {% if i.added == 'not_added' %}
+   {% if i.added == 0 %}
    <button class = "button"><a href = "/wish/{{i.id}}" method = "POST" >Add wish</a></button>
    <button class = "button"><a href = "/cart/{{i.id}}" method = "POST" >Add Cart</a></button>
   
@@ -186,7 +188,40 @@ h3.message{
     {% else %}
     <h1>Stock Not Available</h1> 
     {% endif %}
-  
+  -->
+  <table class="table table-striped table-dark">
+    <thead>
+      <tr>
+        <th scope="col">Image</th>
+        <th scope="col">Prodect Details</th>
+        
+      </tr>
+    </thead>
+    <tbody style="background-color: rgb(197, 209, 211);">
+      {% for i in opj %}
+      <tr>
+        <th scope="row"><img src ="{{i.image.url}}" alt = "Not Uploaded" width =200px height = 200px ></th>
+        <td>
+          <p><h3>{{i.model}}</h3></p>
+          <p><h3>{{i.brand}}</h3></p>
+          <p><h3>Rs.{{i.price}}</h3></p>
+        </td>
+        {% if i.added == 1 %}
+  <td><p><button class = "button"><a href = "/wish/{{i.id}}" method = "POST" >Add wish</a></button></p>
+  </td>
+  {% elif i.added == 2 %}
+  <td><p><button class = "button"><a href = "/cart/{{i.id}}" method = "POST" >Add Cart</a></button></p>
+  </td>
+  {% else %}
+   <td><button class = "button"><a href = "/wish/{{i.id}}" method = "POST" >Add wish</a></button></td>
+   <td><button class = "button"><a href = "/cart/{{i.id}}" method = "POST" >Add Cart</a></button></td>
+  {% endif %}
+        
+      </tr>
+      
+      {% endfor %}
+    </tbody>
+  </table>
 </div></center>
 <!--Home view finish-->
 </body>

@@ -40,7 +40,7 @@ def add_cart(request, pk):
     if request:
         
         opj = Prodect.objects.get(id = pk)
-        opj.added = "added_cart"
+        opj.added = 2
         opj.save()
 
         addCart_value, success_created = Cart.objects.get_or_create(
@@ -77,7 +77,7 @@ def Cart_remove(request, id):
         opj = Cart.objects.get(id = id)
 
         opj1 = Prodect.objects.get(id = opj.name.id)
-        opj1.added = "not_added"
+        opj1.added = 0
         opj1.save()
 
         opj.delete()
@@ -145,7 +145,7 @@ def Register(request):
 
 #------------------------------------------------------
 
-# check_out as order by:
+# check_out as order by(single)
 '''@login_required
 def Orderedby(request, id):
     my_list = [3, 5, 6, 8, 10]
@@ -182,68 +182,56 @@ def Orderedby(request, id):
 
 @login_required
 def Orderedby(request):
+    """
+
+    """
     ak = Prodect.objects.all()
-    ak.update(added = 'not_added')
+    ak.update(added = 0)
     if request.method == 'POST' : 
         opj = Cart.objects.filter(
             customer = request.user, 
            
         )
-        
-        taxes = 0
-        for i in opj.all():
-            tax = int(i.price/ 18 )
-            taxes += tax
-        total = opj.aggregate(Sum('price'))
-
         opj2= Orderby.objects.create(
             customer = request.user, 
-             
-            
         )      
         opj2.ordered_things.add(
             *Cart.objects.filter(Q(customer = request.user) & Q(order = False))
-            #*opj 
         )
         opj.update(order = True)
-        opj1 = opj2.ordered_things.all()
-        print(opj1)
-        contaxt = {
-            'opj1':opj1, 
-            'tax':tax,
-            'total': total['price__sum'] + taxes
-            
-        }
-        opj.update(order = True)
-        
-        return render(request, "order.html" , contaxt)
+        return redirect('/')
 
-    # order_view:-    
+    #>>>> order_view code <<<:-    
     if request:
         opj2= Orderby.objects.latest(
             'ordered_things__id' 
         )
         
-        opj1 = opj2.ordered_things.all()
-        total = opj2.ordered_things.aggregate(Sum('price')) 
-        quantity = opj2.ordered_things.aggregate(Sum('quantity'))
+        opj1 = opj2.ordered_things.all() # m3m key
+        total = opj2.ordered_things.aggregate(p_q = Sum(F('price') * F('quantity')))# p_q => prodect & quantity 
+        count = opj1.count()
         print(total)
-        print(quantity)
-        #total = Orderby.objects.filter(customer = request.user).aggregate(Sum('ordered_things__price'))
         print(total)
-        #tax = total['ordered_things__price__sum']/18
-        tax = total['price__sum']/18
+        tax = int(total['p_q']) * opj2.tax
         print(int(tax))
         contaxt = {
             'opj1':opj1, 
-            #'total':total['ordered_things__price__sum'] + int(tax),
-            'total':total['price__sum'] * quantity['quantity__sum'] + int(tax),
-            'tax':int(tax) 
+            'opj2':opj2, 
+            'total':total['p_q']+ int(tax),
+            'tax':int(tax),  
+            'count':count, 
+            
             
         }
         return render(request, "orderview_page.html" , contaxt)
         
-
+# order_cancel:
+def Cancel_order(request, id):
+    if request.method == "POST":
+        opj_order = Orderby.objects.get(id = id)
+        opj_order.order_status = 0
+        opj_order.save()
+        return redirect('/')
 #------------------------------------------------------
 
 # add_to_wish;-
@@ -252,7 +240,7 @@ def add_wish(request, pk):
     if request:
         
         opj = Prodect.objects.get(id = pk)
-        opj.added = "added_wish"
+        opj.added = 1
         opj.save()
 
         addCart_value, success_created = Wishlist.objects.get_or_create(
@@ -293,7 +281,7 @@ def wish_remove(request, id):
     opj = Wishlist.objects.get(id = id)
 
     opj1 = Prodect.objects.get(id = opj.name.id)
-    opj1.added = "not_added"
+    opj1.added = 0
     opj1.save()
     #messages.warning(request,'The item was Already to your WishList')    
 
@@ -301,6 +289,7 @@ def wish_remove(request, id):
     return redirect("Show_wish") 
 
 #------------------------------------------------------
+
 
 
 

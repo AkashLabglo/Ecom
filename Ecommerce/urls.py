@@ -35,7 +35,8 @@ urlpatterns = [
     path('remove/<id>', Cart_remove, name = "Car_remove"),
     #path('Orderedby/<id>', Orderedby, name = "Orderedby"), #----saparate_cart prodct get url-----
     path('Orderedby', Orderedby, name = "Orderedby"),  
-    path('addquantity/<id>', addquantity, name = "addquantity"),  
+    path('addquantity/<id>', addquantity, name = "addquantity"), 
+    path('Cancel_order/<id>',Cancel_order, name = "Cancel_order" ),  
     # Login/register/logout/password's_Path
     path("login", login, name = "login"),
     path('Logout', Logout, name = 'Logout'), 
@@ -51,3 +52,40 @@ urlpatterns = [
 if settings.DEBUG:
         urlpatterns += static(settings.MEDIA_URL,
         document_root=settings.MEDIA_ROOT)
+
+
+'''
+order_status = IntegerField(default = 2, choices = ORDER_STATUS)
+order_status = IntegerField(default = 2, choices = CART_STATUS)#1.new_order, 2.old_order, 3.not_order 
+ added = IntegerField(default = 2, choices = PRODECT_STATUS) # 1.added_wish, 2.added_cart, 3.not_added
+ #>>>>>>>>>>>>>>MODEL STAUS CHOISCES<<<<<<<<<<<<<<<<<<<<
+# Order
+SUCCESS = 1
+PENDING = 2
+FAILED = 0
+ORDER_STATUS = (
+    (SUCCESS, 'success'), 
+    (PENDING, 'pending'), 
+    (FAILED, 'cancel')
+)
+
+# Cart
+NEWORDER = 1
+OLDORDER = 2
+NOTORDER = 0
+CART_STATUS = (
+    (NEWORDER, 'new_order'), 
+    (OLDORDER, 'old_order'), 
+    (NOTORDER, 'not_order')
+)
+
+# prodect
+ADDWISH = 1
+ADDCART = 2
+NOTADDED = 0
+PRODECT_STATUS = (
+    (ADDWISH, 'added_wish'), 
+    (ADDCART, 'added_cart'), 
+    (NOTADDED, 'not_added')
+)
+'''        
